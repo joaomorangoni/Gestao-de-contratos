@@ -151,3 +151,96 @@ Para produção, é recomendável colocar a análise de IA em fila (Celery/RQ + 
 ## Segurança e LGPD
 
 Este projeto contém CPF, data de nascimento e outros dados pessoais. Para produção, implemente HTTPS, controle de acesso mais granular, logs de auditoria, política de retenção, backups protegidos e criptografia adequada para dados pessoais sensíveis. Nunca registre senhas ou tokens nos logs.
+
+
+## Cliente Python
+
+Foi desenvolvido o arquivo `cliente_terminal.py`, responsável por consumir a API REST do sistema de Gestão de Contratos diretamente pelo terminal.
+
+O cliente utiliza a biblioteca `requests` para realizar requisições HTTP ao backend Flask.
+
+Fluxo da aplicação:
+
+```text
+cliente_terminal.py
+        ↓
+      API Flask
+        ↓
+   Banco de Dados
+```
+
+O cliente permite realizar:
+
+- cadastro de usuário;
+- login;
+- listagem de contratos;
+- cadastro de contratos;
+- atualização de contratos;
+- exclusão de contratos.
+
+As principais requisições utilizadas são:
+
+| Operação | Método | Endpoint |
+|---|---|---|
+| Cadastro de usuário | POST | `/api/auth/register` |
+| Login | POST | `/api/auth/login` |
+| Listar contratos | GET | `/api/contracts` |
+| Cadastrar contrato | POST | `/api/contracts` |
+| Atualizar contrato | PUT | `/api/contracts/{id}` |
+| Excluir contrato | DELETE | `/api/contracts/{id}` |
+
+Para executar o cliente:
+
+```bash
+python cliente_terminal.py
+```
+
+---
+
+## Documentação Swagger
+
+A API possui documentação utilizando Swagger/OpenAPI.
+
+Com o backend em execução, a documentação pode ser acessada em:
+
+```text
+http://127.0.0.1:5000/swagger/
+```
+
+O arquivo responsável pela especificação da documentação é:
+
+```text
+app/static/swagger.json
+```
+
+O Swagger apresenta:
+
+- endpoints disponíveis;
+- métodos HTTP;
+- parâmetros;
+- corpo das requisições;
+- exemplos;
+- códigos HTTP;
+- possíveis respostas;
+- autenticação JWT.
+
+A documentação está organizada nas categorias:
+
+- Autenticação;
+- Usuários;
+- Contratos;
+- Contratos Revisados.
+
+Para testar rotas protegidas, é necessário realizar o login, copiar o `access_token` retornado pela API e utilizar o botão **Authorize** no Swagger.
+
+Para iniciar a API:
+
+```bash
+python run.py
+```
+
+Depois, basta acessar:
+
+```text
+http://127.0.0.1:5000/swagger/
+```

@@ -23,3 +23,18 @@ cliente_terminal.py
         |
         v
    Banco de Dadosg
+
+
+   ## Documentação Swagger
+
+A documentação da API está disponível localmente em:
+
+http://127.0.0.1:5000/swagger/
+
+Para acessar:
+
+1. Ative o ambiente virtual.
+2. Execute:
+
+```bash
+python run.py
