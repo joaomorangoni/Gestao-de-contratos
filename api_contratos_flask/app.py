@@ -5,6 +5,7 @@ from decimal import Decimal
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_swagger_ui import get_swaggerui_blueprint
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
@@ -25,6 +26,27 @@ app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+# ============================================================
+# SWAGGER
+# ============================================================
+
+SWAGGER_URL = "/swagger"
+API_URL = "/static/swagger.json"
+
+swagger_ui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        "app_name": "API Flask - Gestão de Contratos"
+    }
+)
+
+app.register_blueprint(
+    swagger_ui_blueprint,
+    url_prefix=SWAGGER_URL
+)
 
 
 # ============================================================
@@ -275,6 +297,7 @@ def inicio():
             "/clausulas",
             "/aditivos",
             "/historico-status",
+            "/swagger/",
         ]
     })
 
