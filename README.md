@@ -1,63 +1,73 @@
-# Gestor de Contratos — API Flask
+# Gestor de Contratos
 
 ## Nome do projeto
 
 **Gestor de Contratos**
 
+---
+
 ## Descrição
 
-O projeto consiste em uma API REST desenvolvida em Python com Flask para realizar o gerenciamento de contratos e das informações relacionadas a eles.
+O **Gestor de Contratos** é um sistema desenvolvido para centralizar o cadastro, a consulta, a atualização e o acompanhamento de contratos e das informações relacionadas a eles.
 
-A API permite cadastrar, consultar, atualizar e remover dados de clientes, usuários, contratos, cláusulas, aditivos e histórico de status, utilizando os métodos HTTP `GET`, `POST`, `PUT` e `DELETE`.
+A solução possui uma interface web e um backend desenvolvidos em **Python com Flask**. O backend do sistema se comunica com uma **API REST hospedada na AWS**, responsável por realizar as operações de persistência e consulta no banco de dados **PostgreSQL hospedado no Amazon RDS**.
 
-A aplicação foi estruturada para ficar disponível em ambiente de nuvem na **AWS**. Um sistema externo, cujo backend já está implementado, será responsável por consumir a API e realizar as requisições necessárias.
+Além do gerenciamento tradicional dos contratos, o backend do sistema possui um **modelo de Inteligência Artificial** responsável por analisar os contratos e indicar possíveis sinais de fraude.
 
-O banco de dados utilizado é o **PostgreSQL**, hospedado no **Amazon RDS**, e o acesso aos dados é realizado por meio do SQLAlchemy.
+A solução, portanto, integra gerenciamento contratual, serviços em nuvem, banco de dados e Inteligência Artificial em uma única arquitetura.
 
 ---
 
 ## Problema escolhido
 
-O gerenciamento de contratos envolve diferentes tipos de informações, como:
+O gerenciamento de contratos envolve diversas informações importantes, como:
 
 - clientes;
 - usuários responsáveis;
-- dados dos contratos;
+- contratos;
 - cláusulas;
 - aditivos;
 - valores;
 - datas;
-- alterações de status.
+- alterações de status;
+- histórico das operações.
 
-Quando essas informações são armazenadas ou controladas de maneira descentralizada, torna-se mais difícil manter os dados organizados, atualizados e disponíveis para consulta por outros sistemas.
+Quando essas informações são armazenadas ou controladas de forma descentralizada, o acompanhamento dos contratos se torna mais difícil, aumentando o risco de inconsistências, perda de informações e dificuldade de consulta.
 
-Além disso, um sistema de gestão precisa de uma forma padronizada para acessar e modificar essas informações sem depender diretamente do banco de dados.
+Além disso, contratos podem apresentar informações ou características suspeitas que exigem análise adicional. Uma avaliação totalmente manual pode consumir tempo e dificultar a identificação rápida de possíveis fraudes.
 
 ---
 
 ## Solução proposta
 
-A solução proposta é a criação de uma **API REST** responsável por centralizar o acesso aos dados do sistema de gestão de contratos.
+A solução proposta é um **sistema web de gestão de contratos** que reúne as funcionalidades de gerenciamento e análise dos contratos.
 
-A API disponibiliza operações de CRUD para as principais entidades do projeto e funciona como intermediária entre o sistema consumidor e o banco de dados.
+O usuário acessa o sistema por meio da interface web. As ações realizadas são processadas pelo backend desenvolvido em Flask.
 
-O fluxo principal da solução é:
+Quando é necessário consultar ou alterar informações persistidas, o backend realiza requisições HTTP para a API REST hospedada na AWS. A API processa essas requisições e se comunica com o banco PostgreSQL hospedado no Amazon RDS.
+
+O backend também possui um modelo de Inteligência Artificial responsável pela análise dos contratos para identificação de possíveis indícios de fraude.
+
+### Fluxo simplificado
 
 ```text
-Sistema de Gestão
-        |
-        | Requisições HTTP
-        | GET / POST / PUT / DELETE
-        v
-API REST Flask
-        |
-        | SQLAlchemy
-        v
-PostgreSQL
-(Amazon RDS)
+Cliente / Usuário
+       |
+       v
+Sistema Gestor de Contratos
+Frontend + Backend Flask
+       |
+       |------------------------------|
+       |                              |
+       v                              v
+Modelo de IA                    API REST Flask
+Análise de fraude               Hospedada na AWS
+                                      |
+                                      | SQLAlchemy
+                                      v
+                                PostgreSQL
+                                Amazon RDS
 ```
-
-Dessa forma, o sistema não precisa acessar o banco de dados diretamente. Ele realiza as requisições para a API, e a API é responsável por validar, processar e armazenar os dados.
 
 ---
 
@@ -73,67 +83,74 @@ Dessa forma, o sistema não precisa acessar o banco de dados diretamente. Ele re
 
 ## Tecnologias utilizadas
 
-- **Python** — linguagem principal utilizada no desenvolvimento;
-- **Flask** — framework utilizado para criação da API REST;
+- **Python** — linguagem principal do projeto;
+- **Flask** — framework utilizado no backend do sistema e na construção da API REST;
 - **Flask-SQLAlchemy** — integração do Flask com o SQLAlchemy;
 - **SQLAlchemy** — ORM utilizado para comunicação com o banco de dados;
 - **PostgreSQL** — banco de dados relacional;
-- **Amazon RDS** — serviço utilizado para hospedar o banco PostgreSQL na AWS;
+- **Amazon RDS** — serviço da AWS utilizado para hospedar o PostgreSQL;
 - **AWS Lambda** — ambiente de nuvem utilizado para disponibilizar a API;
-- **psycopg2** — driver utilizado para conexão com PostgreSQL;
+- **psycopg2** — driver utilizado na conexão com PostgreSQL;
 - **python-dotenv** — carregamento das variáveis de ambiente;
-- **Werkzeug** — utilizado em funcionalidades do Flask, incluindo geração segura de hash de senha;
+- **Werkzeug** — utilizado por funcionalidades do Flask, incluindo hash seguro de senhas;
 - **Swagger / OpenAPI** — documentação e testes dos endpoints da API;
+- **Modelo de Inteligência Artificial** — utilizado para análise de contratos e identificação de possíveis fraudes;
 - **Git** — controle de versão;
-- **GitHub** — hospedagem do repositório do projeto.
+- **GitHub** — hospedagem e versionamento do repositório.
 
 ---
 
-## Arquitetura inicial
+# Arquitetura inicial
 
-A arquitetura inicial do projeto é composta por três partes principais:
+A arquitetura é dividida em quatro componentes principais:
 
-```text
-┌─────────────────────────────────────┐
-│ Sistema de Gestão de Contratos      │
-│ Backend consumidor da API           │
-└─────────────────┬───────────────────┘
-                  │
-                  │ HTTP / JSON
-                  │ GET / POST
-                  │ PUT / DELETE
-                  ▼
-┌─────────────────────────────────────┐
-│ API REST                            │
-│ Python + Flask                      │
-│ Hospedada na AWS                    │
-└─────────────────┬───────────────────┘
-                  │
-                  │ SQLAlchemy
-                  ▼
-┌─────────────────────────────────────┐
-│ PostgreSQL                          │
-│ Amazon RDS                          │
-└─────────────────────────────────────┘
+### 1. Interface do sistema
+
+É o ponto de acesso do usuário ao Gestor de Contratos. Por meio dela, o cliente pode executar as funcionalidades disponibilizadas pelo sistema.
+
+### 2. Backend Flask
+
+O backend recebe as ações realizadas no sistema e contém as regras de negócio da aplicação.
+
+Ele possui duas responsabilidades principais:
+
+- comunicar-se com a API hospedada na AWS;
+- executar a análise de fraude utilizando o modelo de Inteligência Artificial.
+
+### 3. API REST na AWS
+
+A API REST funciona como intermediária entre o sistema e o banco de dados.
+
+Ela recebe requisições HTTP, valida os dados, executa as operações necessárias e retorna respostas no formato JSON.
+
+Os principais métodos utilizados são:
+
+- `GET`;
+- `POST`;
+- `PUT`;
+- `DELETE`.
+
+### 4. PostgreSQL no Amazon RDS
+
+O banco PostgreSQL é responsável pela persistência das informações do sistema.
+
+A comunicação entre a API e o banco é realizada com **SQLAlchemy**.
+
+### Diagrama da arquitetura
+
+```mermaid
+flowchart TD
+    A[Cliente / Usuário] --> B[Sistema Gestor de Contratos]
+    B --> C[Backend Python + Flask]
+    C --> D[Modelo de IA<br/>Análise de fraude]
+    C --> E[API REST Flask<br/>AWS]
+    E --> F[SQLAlchemy]
+    F --> G[PostgreSQL<br/>Amazon RDS]
+    G --> F
+    F --> E
+    E --> C
+    C --> B
 ```
-
-### Responsabilidades
-
-**Sistema consumidor**
-
-O sistema de gestão é responsável por utilizar os endpoints disponibilizados pela API. Nesta etapa do projeto, o backend responsável por realizar essas requisições já está implementado.
-
-**API Flask**
-
-A API recebe as requisições HTTP, processa os dados enviados, executa as operações necessárias e retorna respostas em JSON.
-
-**SQLAlchemy**
-
-Realiza o mapeamento entre os objetos da aplicação Python e as tabelas do PostgreSQL.
-
-**PostgreSQL / Amazon RDS**
-
-Responsável pela persistência dos dados do sistema.
 
 ---
 
@@ -150,9 +167,9 @@ As principais tabelas são:
 - `aditivo`;
 - `historico_status`.
 
-### Relacionamentos principais
+## Relacionamentos principais
 
-- um cliente pode possuir contratos;
+- um cliente pode possuir vários contratos;
 - um usuário pode estar associado a contratos;
 - um contrato pode possuir várias cláusulas;
 - um contrato pode possuir vários aditivos;
@@ -161,13 +178,41 @@ As principais tabelas são:
 
 ---
 
-# Instalação
+# Modelo de Inteligência Artificial
+
+O backend do Gestor de Contratos possui um modelo de Inteligência Artificial responsável por realizar a **análise de fraude dos contratos**.
+
+O modelo faz parte da camada interna do sistema e é utilizado para auxiliar na identificação de contratos que possam apresentar características suspeitas.
+
+O fluxo de análise é:
+
+```text
+Contrato
+   |
+   v
+Backend Flask
+   |
+   v
+Modelo de IA
+   |
+   v
+Análise de possível fraude
+   |
+   v
+Resultado apresentado/processado pelo sistema
+```
+
+> A descrição do algoritmo, das variáveis utilizadas e das métricas do modelo pode ser acrescentada nesta seção caso seja necessária na documentação final.
+
+---
+
+# Instruções de instalação
 
 ## 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/joaomorangoni/Gestao-de-contratos.git
-cd api_contratos_flask
+cd Gestao-de-contratos
 ```
 
 ---
@@ -211,7 +256,7 @@ python -m pip install -r requirements.txt
 
 # Configuração das variáveis de ambiente
 
-As credenciais e informações de conexão com o banco não ficam diretamente no código-fonte.
+As credenciais e informações de conexão não devem ficar diretamente no código-fonte.
 
 Crie um arquivo chamado:
 
@@ -220,6 +265,8 @@ Crie um arquivo chamado:
 ```
 
 na raiz do projeto.
+
+## Variáveis utilizadas pela API
 
 Exemplo:
 
@@ -231,30 +278,21 @@ DB_USER=usuario_do_banco
 DB_PASSWORD=senha_do_banco
 ```
 
-A aplicação utiliza:
+## URL da API utilizada pelo sistema
 
-```python
-import os
-from dotenv import load_dotenv
+O backend consumidor pode utilizar uma variável para armazenar a URL pública da API:
 
-load_dotenv()  # lê o .env e injeta em os.environ
-
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-
-SQLALCHEMY_DATABASE_URI = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+```env
+API_BASE_URL=https://URL_PUBLICA_DA_API
 ```
+
+> Substitua `URL_PUBLICA_DA_API` pela URL real da API hospedada na AWS.
 
 ## Segurança das credenciais
 
-O arquivo `.env` não deve ser enviado ao GitHub porque contém dados sensíveis.
+O arquivo `.env` **não deve ser enviado ao GitHub**.
 
-O `.gitignore` deve possuir:
+O `.gitignore` deve conter:
 
 ```gitignore
 .env
@@ -262,7 +300,7 @@ O `.gitignore` deve possuir:
 !.env.example
 ```
 
-O arquivo `.env.example` pode ser versionado para demonstrar quais variáveis são necessárias, mas sem conter credenciais reais.
+É recomendado manter no repositório apenas um `.env.example`, sem credenciais reais.
 
 ---
 
@@ -270,23 +308,23 @@ O arquivo `.env.example` pode ser versionado para demonstrar quais variáveis s�
 
 ## Execução local
 
-Com o ambiente virtual ativado:
+Com o ambiente virtual ativado e as dependências instaladas:
 
 ```powershell
 python app.py
 ```
 
-Durante o desenvolvimento, a API pode ser acessada localmente em:
+Durante o desenvolvimento, a aplicação/API pode ser acessada localmente em:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-## Execução em produção
+---
 
-Na arquitetura do projeto, a API será disponibilizada pela **AWS**.
+## Execução utilizando a API na AWS
 
-Após o deploy, o sistema consumidor deverá utilizar a URL pública disponibilizada para a API.
+Em produção, o backend do Gestor de Contratos utiliza a URL pública da API hospedada na AWS.
 
 Exemplo:
 
@@ -294,21 +332,37 @@ Exemplo:
 https://URL_PUBLICA_DA_API
 ```
 
-O backend do sistema de gestão deverá realizar as requisições HTTP utilizando essa URL como endereço base.
-
-Exemplo:
+Uma consulta de contratos, por exemplo, será realizada utilizando:
 
 ```text
 GET https://URL_PUBLICA_DA_API/contratos
 ```
 
-> Substituir `URL_PUBLICA_DA_API` pelo endereço real gerado no ambiente AWS antes da entrega final.
+O fluxo é:
+
+```text
+Sistema
+   |
+   | Requisição HTTP
+   v
+API na AWS
+   |
+   | SQLAlchemy
+   v
+PostgreSQL no Amazon RDS
+   |
+   v
+Resposta JSON
+   |
+   v
+Sistema
+```
 
 ---
 
 # Principais endpoints
 
-Cada entidade possui endpoints para consulta, criação, alteração e exclusão.
+A API disponibiliza operações CRUD para as principais entidades do sistema.
 
 ## Clientes
 
@@ -390,25 +444,6 @@ Cada entidade possui endpoints para consulta, criação, alteração e exclusão
 
 ---
 
-## Criar usuário
-
-### `POST /usuarios`
-
-```json
-{
-  "nome": "João",
-  "email": "joao@email.com",
-  "senha": "123456",
-  "papel": "ADMIN"
-}
-```
-
-A API recebe a senha, gera um hash e armazena somente o valor protegido no campo `senha_hash`.
-
-O hash não é retornado nos endpoints de consulta.
-
----
-
 ## Criar contrato
 
 ### `POST /contratos`
@@ -429,106 +464,23 @@ O hash não é retornado nos endpoints de consulta.
 
 ---
 
-## Criar cláusula
-
-### `POST /clausulas`
-
-```json
-{
-  "contrato_id": 1,
-  "titulo": "Prazo",
-  "descricao": "O contrato terá validade de 12 meses.",
-  "ordem": 1
-}
-```
-
----
-
-## Criar aditivo
-
-### `POST /aditivos`
-
-```json
-{
-  "contrato_id": 1,
-  "descricao": "Aumento do valor do contrato",
-  "novo_valor": 17500.00,
-  "nova_data_fim": "2028-01-01",
-  "data_assinatura": "2026-10-01"
-}
-```
-
----
-
-## Criar histórico de status
-
-### `POST /historico-status`
-
-```json
-{
-  "contrato_id": 1,
-  "status_anterior": "PENDENTE",
-  "status_novo": "ATIVO",
-  "alterado_por": 1
-}
-```
-
----
-
-# Comunicação com o sistema
-
-A API foi criada para ser consumida pelo sistema de gestão de contratos.
-
-Nesta etapa do trabalho, o **backend do sistema consumidor está pronto** e realiza as requisições necessárias para a API.
-
-A comunicação ocorre por meio de requisições HTTP e respostas no formato JSON.
-
-Exemplo de fluxo:
-
-```text
-Usuário
-   |
-   v
-Sistema de Gestão
-   |
-   | solicita contratos
-   v
-GET /contratos
-   |
-   v
-API Flask na AWS
-   |
-   v
-Amazon RDS
-   |
-   v
-Resposta JSON
-   |
-   v
-Sistema de Gestão
-```
-
-Essa separação permite manter o backend consumidor independente da implementação interna do banco de dados.
-
----
-
 # Documentação Swagger
 
 A API possui documentação utilizando **Swagger/OpenAPI**.
 
-Quando executada localmente, a documentação pode ser acessada em:
+## Desenvolvimento local
 
 ```text
 http://127.0.0.1:5000/swagger/
 ```
 
-Quando a API estiver publicada na AWS, a documentação deverá ser acessada utilizando a URL pública da aplicação:
+## AWS
 
 ```text
 https://URL_PUBLICA_DA_API/swagger/
 ```
 
-O Swagger permite visualizar e testar:
+O Swagger permite consultar e testar:
 
 - endpoints disponíveis;
 - métodos HTTP;
@@ -536,15 +488,29 @@ O Swagger permite visualizar e testar:
 - corpo das requisições;
 - exemplos de dados;
 - códigos HTTP;
-- respostas da API.
+- respostas retornadas pela API.
 
-O arquivo de especificação Swagger utilizado pelo projeto pode estar localizado em:
+> Antes da entrega final, substitua `URL_PUBLICA_DA_API` pelo endereço real da aplicação na AWS.
+
+---
+
+# Estrutura básica do projeto
+
+Uma estrutura simplificada do projeto pode ser representada da seguinte forma:
 
 ```text
-app/static/swagger.json
+Gestao-de-contratos/
+├── app.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+├── .env
+├── .env.example
+├── modelo_ia/
+└── arquivos_do_sistema/
 ```
 
-> Caso a estrutura final do projeto utilize outro caminho, atualizar esta informação no README.
+> A estrutura acima deve ser ajustada caso os nomes das pastas e arquivos do repositório sejam diferentes.
 
 ---
 
@@ -562,31 +528,31 @@ http://127.0.0.1:5000/swagger/
 https://URL_PUBLICA_DA_API/swagger/
 ```
 
-> Atualizar com a URL pública real da API após o deploy.
-
----
-
-# Estrutura básica do projeto
-
-```text
-api_contratos_flask/
-├── app.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── .env
-└── .env.example
-```
-
-O arquivo `.env` permanece apenas no ambiente local ou no ambiente seguro de execução e não deve ser enviado ao repositório.
-
 ---
 
 # Link do Trello ou Notion
 
-Adicionar abaixo o link utilizado pelo grupo para organização do projeto:
+Trello utilizado pelo grupo para organização do projeto:
+
+https://trello.com/invite/b/6a982f1afac57a4b37efe2db/ATTI93e793cb437404ce67b3bed5de1bf146603D5766/gestor-de-contratos
+
+---
+
+# Resumo da arquitetura
 
 ```text
-https://trello.com/invite/b/6a982f1afac57a4b37efe2db/ATTI93e793cb437404ce67b3bed5de1bf146603D5766/gestor-de-contratos
+Usuário
+  |
+  v
+Gestor de Contratos
+Frontend + Backend Flask
+  |
+  |-------------------------------|
+  |                               |
+  v                               v
+Modelo de IA                 API REST na AWS
+Análise de fraude                  |
+                                   v
+                              Amazon RDS
+                              PostgreSQL
 ```
----
