@@ -10,11 +10,11 @@
 
 O **Gestor de Contratos** é um sistema desenvolvido para centralizar o cadastro, a consulta, a atualização e o acompanhamento de contratos e das informações relacionadas a eles.
 
-A solução possui uma interface web e um backend desenvolvidos em **Python com Flask**. O backend do sistema se comunica com uma **API REST hospedada na AWS**, responsável por realizar as operações de persistência e consulta no banco de dados **PostgreSQL hospedado no Amazon RDS**.
+A solução possui uma interface web e um backend desenvolvido em **Python com Flask**. O backend do sistema se comunica com uma **API REST hospedada na AWS**, responsável por realizar as operações de persistência e consulta no banco de dados **PostgreSQL hospedado no Amazon RDS**.
 
-Além do gerenciamento tradicional dos contratos, o backend do sistema possui um **modelo de Inteligência Artificial** responsável por analisar os contratos e indicar possíveis sinais de fraude.
+Além do gerenciamento dos contratos, o backend do sistema possui um **modelo de Inteligência Artificial** responsável por analisar as cláusulas contratuais e estimar o **risco e o impacto que o contrato pode representar para a empresa contratante**.
 
-A solução, portanto, integra gerenciamento contratual, serviços em nuvem, banco de dados e Inteligência Artificial em uma única arquitetura.
+A solução integra gerenciamento contratual, serviços em nuvem, banco de dados e Inteligência Artificial em uma única arquitetura.
 
 ---
 
@@ -34,19 +34,19 @@ O gerenciamento de contratos envolve diversas informações importantes, como:
 
 Quando essas informações são armazenadas ou controladas de forma descentralizada, o acompanhamento dos contratos se torna mais difícil, aumentando o risco de inconsistências, perda de informações e dificuldade de consulta.
 
-Além disso, contratos podem apresentar informações ou características suspeitas que exigem análise adicional. Uma avaliação totalmente manual pode consumir tempo e dificultar a identificação rápida de possíveis fraudes.
+Além disso, a análise manual de todas as cláusulas de um contrato pode ser demorada e complexa. Dependendo da quantidade de documentos e do nível de detalhamento das cláusulas, pode ser difícil identificar rapidamente quais condições contratuais representam maior risco ou impacto para a empresa que pretende firmar o contrato.
 
 ---
 
 ## Solução proposta
 
-A solução proposta é um **sistema web de gestão de contratos** que reúne as funcionalidades de gerenciamento e análise dos contratos.
+A solução proposta é um **sistema web de gestão de contratos** que reúne funcionalidades de gerenciamento e análise contratual.
 
 O usuário acessa o sistema por meio da interface web. As ações realizadas são processadas pelo backend desenvolvido em Flask.
 
 Quando é necessário consultar ou alterar informações persistidas, o backend realiza requisições HTTP para a API REST hospedada na AWS. A API processa essas requisições e se comunica com o banco PostgreSQL hospedado no Amazon RDS.
 
-O backend também possui um modelo de Inteligência Artificial responsável pela análise dos contratos para identificação de possíveis indícios de fraude.
+O backend também possui um modelo de Inteligência Artificial responsável por analisar as cláusulas do contrato e gerar uma **estimativa de risco/impacto para a empresa contratante**, auxiliando na avaliação do contrato antes da tomada de decisão.
 
 ### Fluxo simplificado
 
@@ -57,16 +57,16 @@ Cliente / Usuário
 Sistema Gestor de Contratos
 Frontend + Backend Flask
        |
-       |------------------------------|
-       |                              |
-       v                              v
-Modelo de IA                    API REST Flask
-Análise de fraude               Hospedada na AWS
-                                      |
-                                      | SQLAlchemy
-                                      v
-                                PostgreSQL
-                                Amazon RDS
+       |-------------------------------|
+       |                               |
+       v                               v
+Modelo de IA                     API REST Flask
+Análise das cláusulas            Hospedada na AWS
+       |                               |
+       v                               | SQLAlchemy
+Estimativa de risco/impacto             v
+para a empresa contratante        PostgreSQL
+                                  Amazon RDS
 ```
 
 ---
@@ -83,18 +83,18 @@ Análise de fraude               Hospedada na AWS
 
 ## Tecnologias utilizadas
 
-- **Python** — linguagem principal do projeto;
+- **Python** — linguagem principal utilizada no desenvolvimento;
 - **Flask** — framework utilizado no backend do sistema e na construção da API REST;
 - **Flask-SQLAlchemy** — integração do Flask com o SQLAlchemy;
 - **SQLAlchemy** — ORM utilizado para comunicação com o banco de dados;
 - **PostgreSQL** — banco de dados relacional;
-- **Amazon RDS** — serviço da AWS utilizado para hospedar o PostgreSQL;
+- **Amazon RDS** — serviço utilizado para hospedar o banco PostgreSQL na AWS;
 - **AWS Lambda** — ambiente de nuvem utilizado para disponibilizar a API;
-- **psycopg2** — driver utilizado na conexão com PostgreSQL;
+- **psycopg2** — driver utilizado para conexão com PostgreSQL;
 - **python-dotenv** — carregamento das variáveis de ambiente;
-- **Werkzeug** — utilizado por funcionalidades do Flask, incluindo hash seguro de senhas;
+- **Werkzeug** — utilizado em funcionalidades do Flask, incluindo geração segura de hash de senha;
 - **Swagger / OpenAPI** — documentação e testes dos endpoints da API;
-- **Modelo de Inteligência Artificial** — utilizado para análise de contratos e identificação de possíveis fraudes;
+- **Modelo de Inteligência Artificial** — utilizado para analisar cláusulas contratuais e estimar risco/impacto para a empresa contratante;
 - **Git** — controle de versão;
 - **GitHub** — hospedagem e versionamento do repositório.
 
@@ -102,22 +102,22 @@ Análise de fraude               Hospedada na AWS
 
 # Arquitetura inicial
 
-A arquitetura é dividida em quatro componentes principais:
+A arquitetura do projeto é dividida em quatro componentes principais.
 
-### 1. Interface do sistema
+## 1. Interface do sistema
 
-É o ponto de acesso do usuário ao Gestor de Contratos. Por meio dela, o cliente pode executar as funcionalidades disponibilizadas pelo sistema.
+É o ponto de acesso do usuário ao Gestor de Contratos. Por meio dela, o cliente pode utilizar as funcionalidades de cadastro, consulta e gerenciamento disponibilizadas pelo sistema.
 
-### 2. Backend Flask
+## 2. Backend Flask
 
 O backend recebe as ações realizadas no sistema e contém as regras de negócio da aplicação.
 
 Ele possui duas responsabilidades principais:
 
-- comunicar-se com a API hospedada na AWS;
-- executar a análise de fraude utilizando o modelo de Inteligência Artificial.
+- comunicar-se com a API REST hospedada na AWS;
+- enviar as cláusulas do contrato para o modelo de Inteligência Artificial e processar a estimativa de risco/impacto obtida.
 
-### 3. API REST na AWS
+## 3. API REST na AWS
 
 A API REST funciona como intermediária entre o sistema e o banco de dados.
 
@@ -130,7 +130,7 @@ Os principais métodos utilizados são:
 - `PUT`;
 - `DELETE`.
 
-### 4. PostgreSQL no Amazon RDS
+## 4. PostgreSQL no Amazon RDS
 
 O banco PostgreSQL é responsável pela persistência das informações do sistema.
 
@@ -142,14 +142,12 @@ A comunicação entre a API e o banco é realizada com **SQLAlchemy**.
 flowchart TD
     A[Cliente / Usuário] --> B[Sistema Gestor de Contratos]
     B --> C[Backend Python + Flask]
-    C --> D[Modelo de IA<br/>Análise de fraude]
-    C --> E[API REST Flask<br/>AWS]
-    E --> F[SQLAlchemy]
-    F --> G[PostgreSQL<br/>Amazon RDS]
-    G --> F
-    F --> E
-    E --> C
-    C --> B
+    C --> D[Modelo de IA]
+    D --> E[Análise das cláusulas]
+    E --> F[Estimativa de risco/impacto para a empresa contratante]
+    C --> G[API REST Flask na AWS]
+    G --> H[SQLAlchemy]
+    H --> I[PostgreSQL no Amazon RDS]
 ```
 
 ---
@@ -180,14 +178,19 @@ As principais tabelas são:
 
 # Modelo de Inteligência Artificial
 
-O backend do Gestor de Contratos possui um modelo de Inteligência Artificial responsável por realizar a **análise de fraude dos contratos**.
+O backend do Gestor de Contratos possui um modelo de Inteligência Artificial responsável por auxiliar na **análise das cláusulas contratuais**.
 
-O modelo faz parte da camada interna do sistema e é utilizado para auxiliar na identificação de contratos que possam apresentar características suspeitas.
+O objetivo do modelo é analisar as cláusulas presentes no contrato e, a partir dessa análise, estimar o **risco e o possível impacto do contrato para a empresa contratante**.
 
-O fluxo de análise é:
+Essa funcionalidade busca apoiar a avaliação contratual, facilitando a identificação de condições que merecem maior atenção antes da contratação.
+
+### Fluxo da análise
 
 ```text
 Contrato
+   |
+   v
+Cláusulas do contrato
    |
    v
 Backend Flask
@@ -196,13 +199,14 @@ Backend Flask
 Modelo de IA
    |
    v
-Análise de possível fraude
+Análise das cláusulas
    |
    v
-Resultado apresentado/processado pelo sistema
+Estimativa de risco/impacto
+   |
+   v
+Resultado utilizado pelo sistema
 ```
-
-> A descrição do algoritmo, das variáveis utilizadas e das métricas do modelo pode ser acrescentada nesta seção caso seja necessária na documentação final.
 
 ---
 
@@ -290,7 +294,7 @@ API_BASE_URL=https://URL_PUBLICA_DA_API
 
 ## Segurança das credenciais
 
-O arquivo `.env` **não deve ser enviado ao GitHub**.
+O arquivo `.env` **não deve ser enviado ao GitHub**, pois pode conter informações sensíveis.
 
 O `.gitignore` deve conter:
 
@@ -319,8 +323,6 @@ Durante o desenvolvimento, a aplicação/API pode ser acessada localmente em:
 ```text
 http://127.0.0.1:5000
 ```
-
----
 
 ## Execução utilizando a API na AWS
 
@@ -442,8 +444,6 @@ A API disponibiliza operações CRUD para as principais entidades do sistema.
 }
 ```
 
----
-
 ## Criar contrato
 
 ### `POST /contratos`
@@ -494,26 +494,6 @@ O Swagger permite consultar e testar:
 
 ---
 
-# Estrutura básica do projeto
-
-Uma estrutura simplificada do projeto pode ser representada da seguinte forma:
-
-```text
-Gestao-de-contratos/
-├── app.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── .env
-├── .env.example
-├── modelo_ia/
-└── arquivos_do_sistema/
-```
-
-> A estrutura acima deve ser ajustada caso os nomes das pastas e arquivos do repositório sejam diferentes.
-
----
-
 # Link para documentação Swagger
 
 ### Desenvolvimento local
@@ -535,24 +515,3 @@ https://URL_PUBLICA_DA_API/swagger/
 Trello utilizado pelo grupo para organização do projeto:
 
 https://trello.com/invite/b/6a982f1afac57a4b37efe2db/ATTI93e793cb437404ce67b3bed5de1bf146603D5766/gestor-de-contratos
-
----
-
-# Resumo da arquitetura
-
-```text
-Usuário
-  |
-  v
-Gestor de Contratos
-Frontend + Backend Flask
-  |
-  |-------------------------------|
-  |                               |
-  v                               v
-Modelo de IA                 API REST na AWS
-Análise de fraude                  |
-                                   v
-                              Amazon RDS
-                              PostgreSQL
-```
