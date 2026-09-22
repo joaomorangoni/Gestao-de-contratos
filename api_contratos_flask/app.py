@@ -853,8 +853,6 @@ def erro_interno(_):
 # ============================================================
 
 if __name__ == "__main__":
-    # Se o banco já possui as tabelas, db.create_all() apenas confere/cria
-    # as que estiverem faltando. Para projetos com migrations, use Alembic.
     with app.app_context():
         db.create_all()
 
