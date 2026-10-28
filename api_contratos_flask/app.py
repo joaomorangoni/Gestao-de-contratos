@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from datetime import datetime
 from decimal import Decimal
 
@@ -7,9 +8,12 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_swagger_ui import get_swaggerui_blueprint
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
+from sqlalchemy.engine import URL, make_url
 from werkzeug.security import generate_password_hash
 
-load_dotenv()  
+load_dotenv(Path(__file__).with_name(".env"))
 
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
@@ -17,15 +21,77 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-SQLALCHEMY_DATABASE_URI = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or URL.create(
+    "postgresql+psycopg2", username=DB_USER, password=DB_PASSWORD,
+    host=DB_HOST, port=int(DB_PORT or 5432), database=DB_NAME,
 )
+if make_url(SQLALCHEMY_DATABASE_URI).drivername in {"postgres", "postgresql"}:
+    SQLALCHEMY_DATABASE_URI = make_url(SQLALCHEMY_DATABASE_URI).set(drivername="postgresql+psycopg2")
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+if make_url(SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql":
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "connect_args": {"sslmode": os.getenv("DB_SSLMODE", "require"), "connect_timeout": 8},
+    }
 
 db = SQLAlchemy(app)
+
+
+@app.before_request
+def validar_campos():
+    if request.method not in {"POST", "PUT"}:
+        return None
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict):
+        return erro("Envie um JSON válido.")
+    recurso = request.path.strip("/").split("/")[0]
+    obrigatorios = {
+        "clientes": ["nome"], "usuarios": ["nome", "email"],
+        "contratos": ["numero", "titulo", "cliente_id", "data_inicio"],
+        "aditivos": ["contrato_id", "descricao", "data_assinatura"],
+        "clausulas": ["contrato_id"], "historico-status": ["contrato_id"],
+    }
+    for campo in obrigatorios.get(recurso, []):
+        if campo in dados and (dados[campo] is None or not str(dados[campo]).strip()):
+            return erro(f"O campo '{campo}' não pode ficar vazio.")
+    try:
+        for campo in ("valor_total", "novo_valor"):
+            if dados.get(campo) is not None:
+                valor = Decimal(str(dados[campo]))
+                if not valor.is_finite() or valor < 0 or valor >= Decimal("10000000000"):
+                    return erro(f"Valor inválido para '{campo}'.")
+        for campo in ("cliente_id", "usuario_id", "contrato_id", "alterado_por", "ordem"):
+            if dados.get(campo) is not None:
+                if isinstance(dados[campo], bool) or int(dados[campo]) != Decimal(str(dados[campo])):
+                    return erro(f"O campo '{campo}' deve ser inteiro.")
+        inicio = parse_date(dados.get("data_inicio"))
+        fim = parse_date(dados.get("data_fim"))
+        if inicio and fim and fim < inicio:
+            return erro("O vencimento não pode ser anterior ao início.")
+    except (ValueError, TypeError, ArithmeticError):
+        return erro("Verifique os valores numéricos e as datas informadas.")
+
+
+@app.cli.command("init-db")
+def init_db():
+    """Cria tabelas ausentes sem apagar dados existentes."""
+    db.create_all()
+    print("Tabelas inicializadas.")
+
+
+@app.get("/health")
+def health():
+    db.session.execute(text("SELECT 1"))
+    return jsonify({"status": "ok", "database": "connected"})
+
+
+@app.errorhandler(OperationalError)
+def database_unavailable(_):
+    db.session.rollback()
+    return erro("Banco indisponível. Verifique conexão, credenciais e inicialização das tabelas.", 503)
 
 
 # ============================================================
@@ -332,7 +398,7 @@ def criar_cliente():
     cliente = Cliente(
         nome=dados["nome"],
         tipo=dados.get("tipo"),
-        documento=dados.get("documento"),
+        documento=dados.get("documento") or None,
         email=dados.get("email"),
         telefone=dados.get("telefone"),
     )
@@ -524,6 +590,7 @@ def atualizar_contrato(id):
     if dados is None:
         return erro("Envie um JSON válido.")
 
+    status_anterior = contrato.status
     campos_simples = [
         "numero",
         "titulo",
@@ -547,6 +614,11 @@ def atualizar_contrato(id):
         return erro("Datas devem usar o formato YYYY-MM-DD.")
 
     contrato.updated_at = datetime.utcnow()
+    if contrato.status != status_anterior:
+        db.session.add(HistoricoStatus(
+            contrato_id=contrato.id, status_anterior=status_anterior,
+            status_novo=contrato.status, alterado_por=contrato.usuario_id,
+        ))
 
     resposta_erro = salvar()
     if resposta_erro:
@@ -853,7 +925,4 @@ def erro_interno(_):
 # ============================================================
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=False)
