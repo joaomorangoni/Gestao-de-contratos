@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db
 from flask_swagger_ui import get_swaggerui_blueprint
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import OperationalError
@@ -28,7 +28,7 @@ SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or URL.create(
 if make_url(SQLALCHEMY_DATABASE_URI).drivername in {"postgres", "postgresql"}:
     SQLALCHEMY_DATABASE_URI = make_url(SQLALCHEMY_DATABASE_URI).set(drivername="postgresql+psycopg2")
 
-app = Flask(__name__)
+app = Flask(__name__, instance_path=str(Path(__file__).resolve().parent / "instance"))
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 if make_url(SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql":
@@ -37,11 +37,13 @@ if make_url(SQLALCHEMY_DATABASE_URI).get_backend_name() == "postgresql":
         "connect_args": {"sslmode": os.getenv("DB_SSLMODE", "require"), "connect_timeout": 8},
     }
 
-db = SQLAlchemy(app)
+db.init_app(app)
 
 
 @app.before_request
 def validar_campos():
+    if request.path.startswith("/api/"):
+        return None
     if request.method not in {"POST", "PUT"}:
         return None
     dados = request.get_json(silent=True)
@@ -79,6 +81,8 @@ def validar_campos():
 def init_db():
     """Cria tabelas ausentes sem apagar dados existentes."""
     db.create_all()
+    from clm.schema import protect_supabase_tables
+    protect_supabase_tables()
     print("Tabelas inicializadas.")
 
 
@@ -923,6 +927,9 @@ def erro_interno(_):
 # ============================================================
 # EXECUÇÃO
 # ============================================================
+
+from clm.routes import register_clm
+register_clm(app)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)

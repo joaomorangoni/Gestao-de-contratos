@@ -1,0 +1,84 @@
+/* Paleta compartilhada por login, painel, formulários, modais e assinatura. */
+:root {
+  color-scheme: light;
+  --page: #f7f9f8;
+  --surface: #ffffff;
+  --field: #ffffff;
+  --foreground: #334155;
+  --muted: #64748b;
+  --outline: #dfe6e2;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #101816;
+  --surface: #19241f;
+  --field: #121d18;
+  --foreground: #e1ebe5;
+  --muted: #a0b1a7;
+  --outline: #34483d;
+  /* As utilidades slate mantêm sua hierarquia de contraste nos dois temas. */
+  --color-slate-50: #14201a;
+  --color-slate-100: #293b31;
+  --color-slate-200: #354b3e;
+  --color-slate-300: #6f8979;
+  --color-slate-400: #a0b1a7;
+  --color-slate-500: #b0c1b7;
+  --color-slate-600: #c9d6ce;
+  --color-slate-700: #e1ebe5;
+}
+
+@layer base {
+  html, body { background: var(--page); color: var(--foreground); }
+  :root[data-theme="dark"] label { color: #c1d4c7; }
+  :root[data-theme="dark"] input:not([type="checkbox"]),
+  :root[data-theme="dark"] select,
+  :root[data-theme="dark"] textarea {
+    background: var(--field); color: var(--foreground); border-color: var(--outline);
+  }
+  :root[data-theme="dark"] input::placeholder,
+  :root[data-theme="dark"] textarea::placeholder { color: #879e8f; }
+}
+
+@layer utilities {
+  :root[data-theme="dark"] .bg-white { background-color: var(--surface); }
+  :root[data-theme="dark"] [class~="bg-[#f7f9f8]"],
+  :root[data-theme="dark"] [class~="bg-[#f5f8f6]"] { background-color: var(--page); }
+  :root[data-theme="dark"] [class~="bg-[#edf4ef]"] { background-color: #1b3227; }
+  :root[data-theme="dark"] [class*="bg-emerald-50"] { background-color: #20392c; }
+  :root[data-theme="dark"] [class~="bg-white/60"] { background-color: #213e30; }
+  :root[data-theme="dark"] [class*="text-emerald-600"],
+  :root[data-theme="dark"] [class*="text-emerald-700"],
+  :root[data-theme="dark"] [class*="text-emerald-800"],
+  :root[data-theme="dark"] [class*="text-emerald-900"],
+  :root[data-theme="dark"] [class*="text-emerald-950"],
+  :root[data-theme="dark"] [class~="text-[#1b5945]"] { color: #94dcaf; }
+  :root[data-theme="dark"] [class*="border-emerald-100"],
+  :root[data-theme="dark"] [class*="border-emerald-200"] { border-color: #335c43; }
+  :root[data-theme="dark"] .bg-red-50 { background-color: #402427; }
+  :root[data-theme="dark"] .text-red-600,
+  :root[data-theme="dark"] .text-red-700 { color: #ffabae; }
+  :root[data-theme="dark"] .border-red-200 { border-color: #7d4247; }
+  :root[data-theme="dark"] .bg-amber-50 { background-color: #3a301c; }
+  :root[data-theme="dark"] .text-amber-700 { color: #efd089; }
+  :root[data-theme="dark"] .bg-violet-50 { background-color: #322a46; }
+  :root[data-theme="dark"] .text-violet-700 { color: #cdb6f8; }
+  :root[data-theme="dark"] .btn-secondary { background-color: var(--surface); }
+  :root[data-theme="dark"] .btn-secondary:hover,
+  :root[data-theme="dark"] .icon-btn:hover { background-color: #2a4033; }
+  :root[data-theme="dark"] .eyebrow { color: #95b9a2; }
+}
+
+.theme-toggle {
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 50;
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .65rem .9rem; border: 1px solid var(--outline);
+  border-radius: 999px; background: var(--surface); color: var(--foreground);
+  font-size: .75rem; box-shadow: 0 4px 18px #0002;
+}
+.theme-toggle:hover { color: #23845c; }
+:root[data-theme="dark"] .theme-toggle:hover { color: #94dcaf; }
+@media (max-width: 640px) {
+  .theme-toggle { bottom: .75rem; right: .75rem; }
+  .theme-toggle span { display: none; }
+}

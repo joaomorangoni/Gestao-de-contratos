@@ -3,6 +3,9 @@ import unittest
 
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 from app import app, db
+from clm.models import User
+from clm.auth import serializer
+from werkzeug.security import generate_password_hash
 
 
 class ContractFlowTest(unittest.TestCase):
@@ -11,10 +14,15 @@ class ContractFlowTest(unittest.TestCase):
         self.context.push()
         db.create_all()
         self.client = app.test_client()
+        manager = User(name='Gestor', email='gestor@example.com', role='GESTOR', password_hash=generate_password_hash('test-password'))
+        db.session.add(manager)
+        db.session.commit()
+        self.client.environ_base['HTTP_AUTHORIZATION'] = 'Bearer ' + serializer().dumps({'id': manager.id})
 
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        db.engine.dispose()
         self.context.pop()
 
     def test_contract_lifecycle_and_history(self):

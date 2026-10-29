@@ -1,0 +1,11 @@
+import {useEffect,useState} from 'react';
+import type {FormEvent} from 'react';
+import type {User,Role} from '../types';
+import {api,message} from '../api';
+import {ErrorBanner} from '../ui';
+export default function UserManagement(){
+ const [users,setUsers]=useState<User[]>([]),[role,setRole]=useState<Role>('REQUISITANTE'),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ useEffect(()=>{api<User[]>('/users').then(setUsers).catch(e=>setError(message(e)));},[]);
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const form=e.currentTarget,data=new FormData(form);setError('');setBusy(true);try{const user=await api<User>('/users',{method:'POST',body:JSON.stringify(Object.fromEntries(data))});setUsers(old=>[...old,user]);form.reset();setRole('REQUISITANTE');}catch(e){setError(message(e));}finally{setBusy(false);}}
+ return <div className="space-y-6"><p className="text-sm text-slate-500">Cadastre as pessoas envolvidas no fluxo. Cada aprovador representa um departamento.</p><form className="grid gap-4 md:grid-cols-2" onSubmit={submit}><label>Nome<input required name="name" maxLength={120}/></label><label>E-mail<input required type="email" name="email" maxLength={254}/></label><label>Senha inicial (mínimo 10 caracteres)<input required type="password" name="password" minLength={10} maxLength={256} autoComplete="new-password"/></label><label>Papel<select name="role" value={role} onChange={e=>setRole(e.target.value as Role)}>{['REQUISITANTE','APROVADOR','GESTOR','FORNECEDOR'].map(r=><option key={r}>{r}</option>)}</select></label>{role==='APROVADOR'&&<label>Departamento<select name="department" required>{['FINANCEIRO','JURIDICO','COMPLIANCE'].map(d=><option key={d}>{d}</option>)}</select></label>}<div className="flex items-end"><button disabled={busy} className="btn-primary">{busy?'Salvando…':'Criar usuário'}</button></div></form><ErrorBanner text={error}/><div className="divide-y divide-slate-100">{users.map(u=><div key={u.id} className="flex flex-wrap justify-between gap-2 py-3 text-sm"><div><b>{u.name}</b><p className="text-xs text-slate-400">{u.email}</p></div><span className="text-xs text-emerald-700">{u.role}{u.department&&` · ${u.department}`}</span></div>)}</div></div>;
+}

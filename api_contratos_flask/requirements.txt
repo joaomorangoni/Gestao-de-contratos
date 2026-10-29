@@ -6,3 +6,4 @@ python-dotenv
 Werkzeug
 flask-swagger-ui
 requests
+tzdata

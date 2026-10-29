@@ -8,3 +8,5 @@ node_modules/
 dist/
 *.log
 .runtime/
+api_contratos_flask/instance/
+instance/

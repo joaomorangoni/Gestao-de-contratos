@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@source "./";
+
+@layer base {
+  body { margin: 0; font-family: Inter, "Segoe UI", sans-serif; color: #334155; }
+  button, a, select { cursor: pointer; }
+  button:disabled { cursor: wait; opacity: .55; }
+  label { display: block; font-size: .75rem; font-weight: 500; color: #52665b; }
+  input:not([type="checkbox"]), select, textarea { display: block; width: 100%; margin-top: .45rem; border: 1px solid #dfe6e2; border-radius: .5rem; padding: .65rem .8rem; background: white; color: #334155; font-size: .875rem; font-weight: 400; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #76b69a; outline-offset: 2px; }
+  button:focus-visible, a:focus-visible { outline: 2px solid #217256; outline-offset: 3px; }
+  input::placeholder, textarea::placeholder { color: #a2ada7; font-size: .75rem; }
+}
+@layer components {
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-800 bg-emerald-800 px-4 py-3 text-xs font-medium text-white shadow-xs transition hover:bg-emerald-900 disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs transition hover:bg-slate-50; }
+  .icon-btn { @apply rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-emerald-700; }
+  .icon-btn[aria-pressed="true"] { @apply bg-emerald-50 text-emerald-700; }
+  .eyebrow { @apply text-[9px] font-semibold tracking-[.18em] text-emerald-800/55; }
+  .section-label { @apply mb-4 text-[11px] font-semibold tracking-wide text-slate-500; }
+  .detail-label { @apply mb-1 block text-[10px] text-slate-400; }
+}
