@@ -930,6 +930,8 @@ def erro_interno(_):
 
 from clm.routes import register_clm
 register_clm(app)
+from ai.routes import bp as ai_blueprint
+app.register_blueprint(ai_blueprint)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)

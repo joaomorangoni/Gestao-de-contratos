@@ -211,3 +211,32 @@ O SQL pode ser regenerado com `python api_contratos_flask/export_schema.py`. Est
 - O CPF/CNPJ é obrigatório e tem tamanho limitado; não há validação fiscal de dígitos verificadores.
 - Uploads validam tamanho, extensão e cabeçalho PDF/UTF-8; não há antivírus ou validação estrutural completa de PDF.
 - Antes de expor à internet, adicionar HTTPS, rate limiting, gestão/recuperação/revogação de sessões, auditoria operacional e política de retenção/backup. As rotas antigas agora exigem gestor; o Swagger legado continua documentando somente a API anterior.
+
+## IA documental — Gemini 2.5 Flash
+
+O módulo `api_contratos_flask/ai/` usa o SDK oficial `google-genai`, saídas estruturadas e validação Pydantic. O modelo utilizado é `gemini-2.5-flash`. Não há mudança no banco de dados.
+
+Configure a chave somente em `api_contratos_flask/.env` e reinicie a API:
+
+```dotenv
+GEMINI_API_KEY=sua_chave_google_ai_studio
+```
+
+O campo foi adicionado vazio na configuração local. Sem chave, os endpoints retornam `503` e os cadastros manuais continuam disponíveis. Não use prefixo `VITE_` na chave e não a envie ao frontend.
+
+| Endpoint | Entrada | Permissão | Saída |
+| --- | --- | --- | --- |
+| `POST /api/ai/extrair-proposta` | `multipart/form-data`, campo `file` com PDF | Requisitante ou gestor | `nome_fornecedor`, `cnpj_fornecedor` (ou null), `valor_total`, `prazo_vigencia_meses`, `objeto_resumido` |
+| `POST /api/ai/analisar-riscos` | PDF no campo `file`, ou JSON `{"text":"conteúdo da minuta"}` | Requisitante, aprovador ou gestor | `nivel_risco_geral` (Baixo/Médio/Alto), `clausulas_atencao` com `clausula`, `motivo_risco` e `sugestao_correcao` |
+
+Ambos exigem o mesmo Bearer do login. O upload do Flask usa `request.files`/`FileStorage` (equivalente ao UploadFile de outros frameworks). PDFs são verificados com `pypdf`, limitados a 5 MB e 100 páginas e não podem estar protegidos por senha. Texto de minuta é limitado a 60.000 caracteres. A entrada é enviada ao Gemini em memória; o serviço não salva o documento nem a resposta no banco.
+
+No formulário **Novo contrato**, selecione uma proposta e clique em **Processar com IA**. O componente `AIContractUploader.tsx` preenche fornecedor, CNPJ, valor e objeto. A vigência em meses é incorporada ao escopo para manter o dado no pedido sem presumir datas de início/fim. E-mail e centro de custo continuam sendo preenchidos manualmente. Os campos extraídos devem ser revisados; a proposta analisada só será anexada ao pedido se for adicionada também na seção de anexos.
+
+Em **Detalhes da solicitação**, usuários internos encontram a auditoria de riscos: envie um PDF ou cole o texto da minuta. O resultado exibe o nível de risco e cláusulas expansíveis, com motivo e sugestão de correção. A análise não altera o status do pedido nem substitui a revisão do Jurídico.
+
+Erros tratados: entrada inválida (`400`), arquivo grande (`413`), documento bloqueado/sem dados numéricos explícitos (`422`), limite de uso Gemini (`429`), resposta fora do esquema/falha do provedor (`502`), chave ausente/sem permissão (`503`) e timeout (`504`). O timeout do SDK é de 60 segundos, sem repetição automática das chamadas. Os valores e a vigência não são inventados: quando ausentes/ambíguos, a extração solicita preenchimento manual em vez de devolver zeros presumidos.
+
+Os testes `test_ai.py` usam mocks, sem cobrança ou envio de documentos ao Google, e verificam PDFs, autenticação, JSON estruturado, dados incompletos, falhas de credencial, cota e timeout. Uma chamada real exige configurar a chave e usar um documento autorizado.
+
+Referências oficiais: [SDK Python](https://googleapis.github.io/python-genai/), [saídas estruturadas](https://ai.google.dev/gemini-api/docs/structured-output), [processamento de PDF](https://ai.google.dev/gemini-api/docs/document-processing).
